@@ -71,7 +71,7 @@ int DHT11::readRawData(byte data[5]) {
                     byte value = 0;
                     for (int i = 0; i < 8; i++) {
                         while (pin_DHT11 == 0);
-                        wait_us(30);
+                        wait_us(40);
 
                         if (pin_DHT11 == 1) {
                             value |= (1 << (7 - i));

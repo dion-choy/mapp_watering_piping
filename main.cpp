@@ -6,32 +6,43 @@
 #include "wifi.hpp"
 #include "lcd.h"
 
-Thread wifi;
-DHT11 dht(PB_7);
+Thread wifi(osPriorityNormal, OS_STACK_SIZE/2);
+Thread sensors(osPriorityNormal, OS_STACK_SIZE/2);
+DHT11 dht(PA_4);
 
 int temp = 0;
 int humidity = 0;
 int brightness = 0;
 float dist = 0.0f;
 float moisture = 0.0f;
-void broadCastPage(void) {
+
+void broadCastPage();
+void updateCode();
+
+void broadCastPage() {
     setupWifi();
     while (true) {
         loadPage(temp, humidity, brightness, dist, moisture);
     }
 }
 
-int main()
-{
-	lcd_init();
-    wifi.start(broadCastPage);
+void updateCode() {
     while (true) {
-        temp = dht.readTemperature();
-        humidity = dht.readHumidity();
+        dht.readTemperatureHumidity(temp, humidity);
         dist = getDist();
         moisture = getMoist();
         brightness = getBright();
-        // printf ("Obstacle is %.2f cm away!\n", dist);
+        thread_sleep_for(1000);
+        printf ("Obstacle is %.2f cm away!\n", dist);
         // printf ("Brightness: %d\n", brightness);
+    }
+}
+
+int main()
+{
+	lcd_init();
+    sensors.start(updateCode);
+    wifi.start(broadCastPage);
+    while (true) {
     }
 }
