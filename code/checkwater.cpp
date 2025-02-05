@@ -18,8 +18,8 @@ using namespace std::chrono;
 #define ECHO_TIME_OUT 30
 #define ECHO_MAX_TIME 25
 // Comment out LED bar definitions
-#define DISPLAY_BAR_MASK 0x000000FF //PORT C0: PC_7 - PC_0
-#define DISPLAY_BAR_RESET 0x00000000 
+// #define DISPLAY_BAR_MASK 0x000000FF //PORT C0: PC_7 - PC_0
+// #define DISPLAY_BAR_RESET 0x00000000 
 
 // Input of IR sensor data
 DigitalOut Trig(PC_5);
@@ -31,7 +31,10 @@ Ticker BlinkLED_PB14;
 // Turn on/off the on-board LED: PB14
 DigitalOut LED_PB14(PB_14);
 
-PortOut displayBarPort(PortC, DISPLAY_BAR_MASK);
+// Add decoder pin definitions
+DigitalOut decoderA0(PB_4);  // Least significant bit
+DigitalOut decoderA1(PB_5);  // Middle bit
+DigitalOut decoderA2(PB_6);  // Most significant bit
 
 float objDistance = 0;
 bool bDetectingObj = false;
@@ -157,7 +160,8 @@ float getDist()
 }
 int main(){
     
-    displayBarPort = DISPLAY_BAR_RESET;
+    // Remove previous LED initialization
+    // displayBarPort = DISPLAY_BAR_RESET;
    
     while(true){
         dist = getDist();
@@ -166,17 +170,16 @@ int main(){
         if (tankFullPercent > 100) tankFullPercent = 100;
         if (tankFullPercent < 0) tankFullPercent = 0;
 
+        // Convert percentage to LED level (0-7)
+        uint8_t ledLevel = (tankFullPercent / 12.5);
+        if(ledLevel > 7) ledLevel = 7;  // Ensure we don't exceed 7 (3-bit limit)
         
-        uint8_t ledsToLight = (tankFullPercent / 12.5); 
-        uint8_t ledPattern = 0;
-        
-        for(int i = 0; i < ledsToLight; i++) {
-            ledPattern |= (1 << i);
-        }
-        
-        displayBarPort = ledPattern;
+        // Set decoder pins according to binary value
+        decoderA0 = (ledLevel & 0x01);       // Bit 0
+        decoderA1 = (ledLevel & 0x02) >> 1;  // Bit 1
+        decoderA2 = (ledLevel & 0x04) >> 2;  // Bit 2
 
-        printf("The tank is %.2f %% full\n", tankFullPercent);
-        thread_sleep_for(WAIT_TIME_MS_2);  // Small delay between updates
+        printf("The tank is %.2f %% full (LED level: %d)\n", tankFullPercent, ledLevel);
+        thread_sleep_for(WAIT_TIME_MS_2);
     }
 }
