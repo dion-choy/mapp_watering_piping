@@ -1,0 +1,31 @@
+extern float getDist();
+extern void ISR_EchoTimeout();
+extern void ISR_PC6_Echo_High(void);
+extern void ISR_PC6_Echo_Low(void);
+
+extern float objDistance;
+extern bool bDetectingObj;
+extern bool bObjDetected;
+extern bool bTimeOut;
+extern bool bShortDistance;
+extern bool bMediumDistance;
+extern bool bLongDistance;
+extern unsigned int echoTime_Obj;
+extern float dis;
+extern float maxdist;
+extern float mindist;
+
+extern const int WAIT_TIME_US_0;
+extern const int WAIT_TIME_US_1;
+extern const int WAIT_TIME_US_2;
+extern const int WAIT_TIME_MS_0;
+extern const int WAIT_TIME_MS_1;
+extern const int WAIT_TIME_MS_2;
+extern const int WAIT_TIME_MS_3;
+extern const int WAIT_TIME_MS_4;
+extern const int WAIT_TIME_MS_5;
+extern const int WAIT_TIME_MS_6;
+extern const int WAIT_TIME_MS_7;
+extern const int WAIT_TIME_MS_8;
+extern const int ECHO_TIME_OUT;
+extern const int ECHO_MAX_TIME;
