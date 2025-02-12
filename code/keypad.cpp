@@ -60,6 +60,7 @@ char userInput(char input) {
   // Defining a 20 char string
 
 // ---- Main Program ---------------------------------------------------------------
+/*
 int main( )
 {
     printf("This is MAPP LCDKeypadPwd running on Mbed OS %d.%d.%d.\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
@@ -87,7 +88,4 @@ int main( )
 		lcd_write_cmd(0x01);			// 00000001 Clear Display instruction
 	}
 }
-
-
-
-
+*/

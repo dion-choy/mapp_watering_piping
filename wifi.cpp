@@ -217,7 +217,7 @@ void setupWifi() {
     maxConn = bufRx[num2-7] - '0';
 }
 
-void loadPage(int temp, int humidity, int brightness, float dist, float moisture) {
+void loadPage(int temp, int humidity, int brightness, float percentFull, float moisture) {
     if (brightness == 0) {
         sprintf(brightnessStr, "Dark  ");
     } else if (brightness == 1) {
@@ -245,7 +245,7 @@ void loadPage(int temp, int humidity, int brightness, float dist, float moisture
             thread_sleep_for(100);
         }
 
-        sprintf(bufTx, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:310\r\n\r\n"
+        sprintf(bufTx, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:312\r\n\r\n"
         "<!DOCTYPE html>"
         "<html lang=\"en\">"
         "<head>"
@@ -255,13 +255,13 @@ void loadPage(int temp, int humidity, int brightness, float dist, float moisture
         "<title>Document</title>"
         "</head>"
         "<body>"
+        "Water Tank: %.2f&percnt;<br>"
         "Temperature: %d<br>"
         "Humdity: %d<br>"
-        "Distance: %.2f<br>"
         "Brightness: %s<br>"
         "Moisture: %.2f"
         "                                               "  //padding
-        "\r\n", temp, humidity, dist, brightnessStr, moisture);
+        "\r\n", percentFull, temp, humidity, brightnessStr, moisture);
         num1 = serial_port.write(bufTx, strlen(bufTx));
         if(num1) {
             // Toggle the LED.
