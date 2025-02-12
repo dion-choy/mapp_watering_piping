@@ -21,7 +21,10 @@ const char openMessage2[] = "    OPENING VALVE  ";
 const char nullMessage[] = " INVALID INPUT ";
 const char delayMessage[] = " SET DELAY: ";
 const char delayMessage2[] = " DELAY SET: ";
+const char moistureMsg[] = "Soil Moisture:     ";
+const char levelMsg[] = "Level:     %      ";
 
+AnalogIn soilSensor(PA_1);  // Soil moisture sensor on PA1
 
 void displayMessage(const char* message) {
     for (int i = 0; message[i] != '\0'; i++) {
@@ -55,6 +58,41 @@ char userInput(char input) {
             displayMessage(nullMessage);
             return false;
         }
+        case '3': {
+            while(1) {
+                // Read analog value and convert to moisture percentage
+                float moistureLevel = (1.0 - soilSensor.read()) * 100;
+                
+                // Display first line
+                lcd_write_cmd(0x80);
+                displayMessage(moistureMsg);
+                
+                // Display second line with percentage
+                lcd_write_cmd(0xC0);
+                displayMessage(levelMsg);
+                
+                // Position cursor and display percentage
+                lcd_write_cmd(0xC7);
+                
+                // Convert percentage to characters
+                int whole = (int)moistureLevel;
+                int tens = whole / 10;
+                int ones = whole % 10;
+                
+                lcd_write_data('0' + tens);
+                lcd_write_data('0' + ones);
+                
+                // Check keypad for exit key
+                char key = getkey();  // Non-blocking keypad check
+                if(key == '*') {  // Use * to exit
+                    lcd_write_cmd(0x01);  // Clear display
+                    return '3';
+                }
+                
+                thread_sleep_for(500);  // Update every 500ms
+            }
+            return '3';
+        }
     }
 }
   // Defining a 20 char string
@@ -86,6 +124,7 @@ int main( )
 
 		lcd_write_cmd(0x01);			// 00000001 Clear Display instruction
 	}
+    
 }
 
 
