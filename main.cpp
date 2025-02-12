@@ -5,6 +5,7 @@
 #include "sensors.hpp"
 #include "wifi.hpp"
 #include "lcd.h"
+#include "keypad.h"
 #include "lcdscroll.hpp"
 
 Thread wifi(osPriorityNormal, OS_STACK_SIZE/2);
@@ -74,6 +75,7 @@ int main()
         
 
         printf("The tank is %.2f %% full (LED level: %.2f)\n", tankFullPercent, tempPercent);
+        printf("%s", ipBuf);
 
         
         char key = getkey(); // Wait for key input

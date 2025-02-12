@@ -1,6 +1,6 @@
 #include "mbed.h"
 #include "lcd.h"
-#include "keypad.h"
+#include "wifi.hpp"
 
 // Define multiple lines of text (5 rows total)
 const char *lines[] = {
@@ -12,7 +12,7 @@ const char *lines[] = {
 };
 
 // Constants
-const int TOTAL_LINES = (sizeof(lines) / sizeof(lines[0]));  // Total stored lines
+int TOTAL_LINES = (sizeof(lines) / sizeof(lines[0]));  // Total stored lines
 #define LCD_LINES 2  // LCD has 2 visible rows
 
 // Track which row is currently highlighted (0 = first line, 1 = second line)
@@ -20,9 +20,11 @@ int cursorPosition = 0;
 // Track which lines are being displayed
 int displayStartIndex = 0;
 
+bool selectedOption = false;
+
 // Function prototypes
 void select_option();
-void update_display();
+void update_display(bool);
 void clear_lcd();
 
 // Function to clear LCD only when changing to a new set of lines
@@ -68,6 +70,10 @@ void update_display(bool full_refresh) {
 
 // Function to scroll down (cursor moves properly, updates display only when needed)
 void scroll_down() {
+    if (selectedOption) {
+        return;
+    }
+    
     if (cursorPosition == 0) {
         // Move cursor to second line without clearing the screen
         cursorPosition = 1;
@@ -84,6 +90,10 @@ void scroll_down() {
 
 // Function to scroll up (cursor moves properly, updates display only when needed)
 void scroll_up() {
+    if (selectedOption) {
+        return;
+    }
+    
     if (cursorPosition == 1) {
         // Move cursor up to first line without clearing the screen
         cursorPosition = 0;
@@ -103,7 +113,16 @@ void select_option() {
     int selectedIndex = displayStartIndex + cursorPosition;
     printf("You selected: %s\n", lines[selectedIndex]); // Placeholder action
 
+    if (selectedOption) {
+        update_display(true);
+        selectedOption = false;
+        return;
+    }
+
+    clear_lcd();
+    lcd_write_cmd(0x80);  // Move cursor to line 1
     // Placeholder: Add actual function calls for each option
+    int i = 0;
     switch (selectedIndex) {
         case 0:
             printf("Displaying Temperature & Humidity...\n");
@@ -113,6 +132,10 @@ void select_option() {
             break;
         case 2:
             printf("Displaying IP Address...\n");
+            while (ipBuf[i] != '\0') {
+                lcd_write_data(ipBuf[i]);
+                i++;
+            }
             break;
         case 3:
             printf("Setting Watering Frequency...\n");
@@ -124,4 +147,5 @@ void select_option() {
             printf("Invalid selection\n");
             break;
     }
+    selectedOption = true;
 }

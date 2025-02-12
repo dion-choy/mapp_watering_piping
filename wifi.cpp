@@ -19,6 +19,7 @@ static BufferedSerial serial_port(UART3_TX, UART3_RX);
 // Application buffer to send the data
 char bufRx[MAXIMUM_BUFFER_SIZE] = {0};
 char bufTx[MAXIMUM_BUFFER_SIZE] = {0};
+char ipBuf[15] = {0};
 char bufCommand[MAXIMUM_BUFFER_SIZE] = {0};
 char brightnessStr[7];
 char ipString[] = "+CIFSR:STAIP,\"";
@@ -150,12 +151,16 @@ void setupWifi() {
                 if (j == strlen(ipString)) {
                     lcd_write_cmd(0x80);
 
+                    int k = 0;
                     while (bufRx[i+j] != '"') {
-                        lcd_write_data(bufRx[i+j]);
+                        ipBuf[k] = bufRx[i+j];
                         j++;
+                        k++;
                     }
+                    ipBuf[k] = '\0';
                 }
             }
+            printf("%s", ipBuf);
         }
         thread_sleep_for(200);
     }
@@ -240,7 +245,7 @@ void loadPage(int temp, int humidity, int brightness, float percentFull, float m
             if(num2) {
                 // Toggle the LED.
                 bufRx[num2] = '\0';
-                printf("%s\n", bufRx);
+                // printf("%s\n", bufRx);
             }
             thread_sleep_for(100);
         }

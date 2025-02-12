@@ -1,10 +1,9 @@
 #include "mbed.h"
 #include "lcd.h"
-#include "keypad.h"
 
 extern char *lines[];
 extern int displayStartIndex;
-extern const int TOTAL_LINES;
+extern int TOTAL_LINES;
 
 // Function to update LCD with cursor
 extern void update_display(bool);
