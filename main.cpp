@@ -8,7 +8,7 @@
 
 Thread wifi(osPriorityNormal, OS_STACK_SIZE/2);
 Thread sensors(osPriorityNormal, OS_STACK_SIZE/2);
-DHT11 dht(PA_4);
+DHT11 dht(PA_7);
 
 int temp = 0;
 int humidity = 0;
