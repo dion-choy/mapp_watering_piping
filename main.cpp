@@ -5,10 +5,14 @@
 #include "sensors.hpp"
 #include "wifi.hpp"
 #include "lcd.h"
+#include "keypad.h"
+#include "lcdscroll.hpp"
+#include "delay.hpp"
 
 Thread wifi(osPriorityNormal, OS_STACK_SIZE/2);
 Thread sensors(osPriorityNormal, OS_STACK_SIZE/2);
-DHT11 dht(PA_4);
+Thread countdownThread(osPriorityHigh);  // Give countdown higher priority
+DHT11 dht(PA_7);
 
 int temp = 0;
 int humidity = 0;
@@ -46,11 +50,19 @@ void updateCode() {
 int main()
 {
 	lcd_init();
+    
+    // Start countdown thread first with high priority
+    initCountdownThread();
+    
+    // Then start other threads
     sensors.start(updateCode);
     wifi.start(broadCastPage);
 
     float maxdist = 30.0;
     float mindist = 5.0;
+
+    lcd_init(); // Initialize LCD
+    update_display(true); // Show initial text with full refresh
 
     while (true) {
         float tempPercent = (1 - (dist - mindist)/(maxdist - mindist)) * 100;
@@ -67,7 +79,19 @@ int main()
         // decoderA0 = (ledLevel & 0x01);       // Bit 0
         // decoderA1 = (ledLevel & 0x02) >> 1;  // Bit 1
         // decoderA2 = (ledLevel & 0x04) >> 2;  // Bit 2
+        
 
         printf("The tank is %.2f %% full (LED level: %.2f)\n", tankFullPercent, tempPercent);
+        printf("%s", ipBuf);
+
+        
+        char key = getkey(); // Wait for key input
+        if (key == 'D' && displayStartIndex + 1 < TOTAL_LINES) {  // Scroll Down
+            scroll_down();
+        } else if (key == 'E') {  // Scroll Up
+            scroll_up();
+        } else if (key == 'A') {  //  Select current row
+            select_option();
+        }
     }
 }

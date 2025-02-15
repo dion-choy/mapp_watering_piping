@@ -3,7 +3,7 @@
 #define DARK 0.7f
 #define DIM 0.4f
 
-AnalogIn LDRAnalog(PA_0);
+AnalogIn LDRAnalog(PA_6);
 
 int getBright() {
     LDRAnalog.set_reference_voltage(3.3f);
