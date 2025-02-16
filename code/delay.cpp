@@ -73,11 +73,6 @@ void countdownTask() {
     }
 }
 
-void initCountdownThread() {
-    printf("[INIT] Starting countdown thread\n");
-    countdownThread.start(countdownTask);
-}
-
 void displayFullScreen() {
     lcd_write_cmd(0x01);
     thread_sleep_for(10);

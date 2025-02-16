@@ -8,9 +8,8 @@
 #include "lcdscroll.hpp"
 #include "delay.hpp"
 
-Thread wifi(osPriorityNormal, OS_STACK_SIZE/4);
-Thread sensors(osPriorityNormal, OS_STACK_SIZE/4);
-Thread countdownThread(osPriorityNormal, OS_STACK_SIZE/2);  // Give countdown higher priority
+Thread wifi(osPriorityNormal, OS_STACK_SIZE/2);
+Thread sensors(osPriorityNormal, OS_STACK_SIZE/2);
 DHT11 dht(PA_7);
 
 int temp = 0;
@@ -19,10 +18,6 @@ int brightness = 0;
 float dist = 0.0f;
 float moisture = 0.0f;
 float tankFullPercent = 0.0f;
-
-DigitalOut decoderA0(PB_4);  // Least significant bit
-DigitalOut decoderA1(PB_5);  // Middle bit
-DigitalOut decoderA2(PB_6);  // Most significant bit
 
 unsigned char key = 255;
 BusIn Keypad_Data(PB_8, PB_9, PB_10, PB_11); // Keypad data pins
@@ -81,7 +76,6 @@ int main()
     
     sensors.start(updateCode);
     wifi.start(broadCastPage);
-    initCountdownThread();
 
     Keypad_Data.mode(PullNone);
     keypad_interrupt.rise(&keypad_ISR);
