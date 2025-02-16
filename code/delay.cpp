@@ -1,6 +1,7 @@
 #include "mbed.h"
 #include "lcd.h"
 #include "keypad.h"
+#include "pump.hpp"
 
 const char countMsg[] = "Days till watering:  ";
 const char daysMsg[] = "     Days";
@@ -123,9 +124,6 @@ void startCountdown() {
             countdownMutex.lock();
             inCountdownMenu = false;
             countdownMutex.unlock();
-            
-            lcd_write_cmd(0x01);
-            thread_sleep_for(10);
             return;
         }
         
@@ -160,6 +158,8 @@ void startCountdown() {
             if(!countdownActive && daysRemaining > 0) {
                 countdownActive = true;
                 countdownTimer.reset();
+                startPump()
+                
                 lastUpdateTime = 0;
             }
             displayDays();

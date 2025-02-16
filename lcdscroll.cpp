@@ -2,6 +2,8 @@
 #include "lcd.h"
 #include "wifi.hpp"
 #include "delay.hpp"
+#include "pump.hpp"
+#include "sensors.hpp"
 
 // Define multiple lines of text (5 rows total)
 const char *lines[] = {
@@ -22,6 +24,7 @@ int cursorPosition = 0;
 int displayStartIndex = 0;
 
 bool selectedOption = false;
+DigitalOut relay(PA_0);
 
 // Function prototypes
 void select_option();
@@ -128,9 +131,31 @@ void select_option() {
         case 0:
             printf("Displaying Temperature & Humidity...\n");
             break;
-        case 1:
+        case 1: {
             printf("Displaying Soil Moisture Data...\n");
+            lcd_write_cmd(0x01);  // Clear display first
+            thread_sleep_for(10);
+            
+            lcd_write_cmd(0x80);
+            const char* moistMsg = "Soil Moisture:     ";
+            for(int i = 0; i < 16; i++) {
+                lcd_write_data(moistMsg[i]);
+            }
+            
+            // Get current moisture reading
+            float currentMoisture = getMoist();
+            
+            // Display moisture value
+            lcd_write_cmd(0xC0);
+            char moistBuf[20];
+            sprintf(moistBuf, "%.1f%%", currentMoisture);
+            for(int i = 0; moistBuf[i] != '\0'; i++) {
+                lcd_write_data(moistBuf[i]);
+            }
+            
+            printf("Current moisture: %.1f%%\n", currentMoisture);
             break;
+        }
         case 2:
             printf("Displaying IP Address...\n");
             while (ipBuf[i] != '\0') {
@@ -144,6 +169,13 @@ void select_option() {
             break;
         case 4:
             printf("Activating Watering System NOW!!!\n");
+            startPump();
+            lcd_write_cmd(0x01);
+            lcd_write_cmd(0x80);
+            const char* waterMsg = "Watering plants...  ";
+             for(int i = 0; i < 20; i++) {
+            lcd_write_data(waterMsg[i]);
+             }
             break;
         default:
             printf("Invalid selection\n");

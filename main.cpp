@@ -8,6 +8,7 @@
 #include "keypad.h"
 #include "lcdscroll.hpp"
 #include "delay.hpp"
+#include "leakdetect.hpp"  // Add header for leak detection
 
 Thread wifi(osPriorityNormal, OS_STACK_SIZE/2);
 Thread sensors(osPriorityNormal, OS_STACK_SIZE/2);
@@ -20,10 +21,12 @@ int brightness = 0;
 float dist = 0.0f;
 float moisture = 0.0f;
 float tankFullPercent = 0.0f;
+bool pumpActive = false;  // Track pump status
 
 DigitalOut decoderA0(PB_4);  // Least significant bit
 DigitalOut decoderA1(PB_5);  // Middle bit
 DigitalOut decoderA2(PB_6);  // Most significant bit
+DigitalOut relay(PA_0);
 
 void broadCastPage();
 void updateCode();
@@ -64,6 +67,9 @@ int main()
     lcd_init(); // Initialize LCD
     update_display(true); // Show initial text with full refresh
 
+    uint32_t lastKeyTime = 0;
+    const uint32_t KEY_TIMEOUT = 5000;  // 5 seconds timeout for menu
+
     while (true) {
         float tempPercent = (1 - (dist - mindist)/(maxdist - mindist)) * 100;
         
@@ -71,27 +77,33 @@ int main()
         else if (tempPercent < 0) tankFullPercent = 0;
         else tankFullPercent = tempPercent;
 
-        // // Convert percentage to LED level (0-7)
-        // uint8_t ledLevel = (tankFullPercent / 12.5);
-        // if(ledLevel > 7) ledLevel = 7;  // Ensure we don't exceed 7 (3-bit limit)
-        
-        // // Set decoder pins according to binary value
-        // decoderA0 = (ledLevel & 0x01);       // Bit 0
-        // decoderA1 = (ledLevel & 0x02) >> 1;  // Bit 1
-        // decoderA2 = (ledLevel & 0x04) >> 2;  // Bit 2
-        
-
         printf("The tank is %.2f %% full (LED level: %.2f)\n", tankFullPercent, tempPercent);
         printf("%s", ipBuf);
 
-        
-        char key = getkey(); // Wait for key input
-        if (key == 'D' && displayStartIndex + 1 < TOTAL_LINES) {  // Scroll Down
-            scroll_down();
-        } else if (key == 'E') {  // Scroll Up
-            scroll_up();
-        } else if (key == 'A') {  //  Select current row
-            select_option();
+        // Check for key input (non-blocking)
+        if(keypad_getkey_nb(&key)) {  // Assuming you have a non-blocking keypad function
+            lastKeyTime = us_ticker_read() / 1000;  // Update last key press time
+            
+            if (key == 'D' && displayStartIndex + 1 < TOTAL_LINES) {
+                scroll_down();
+            } else if (key == 'E') {
+                scroll_up();
+            } else if (key == 'A') {
+                select_option();
+            }
         }
+        
+        // If no key pressed for timeout period, check for leaks
+        uint32_t currentTime = us_ticker_read() / 1000;
+        if(currentTime - lastKeyTime > KEY_TIMEOUT) {
+            // Check for leaks
+            if(check_for_leak(pumpActive)) {
+                // If leak detected, show warning for a few seconds then return to menu
+                thread_sleep_for(3000);
+                update_display(true);  // Refresh menu display
+            }
+        }
+
+        thread_sleep_for(100);  // Small delay to prevent busy waiting
     }
 }
