@@ -78,4 +78,5 @@ BUILD\NUCLEO_F103RB\ARMC6\mbed-os\platform\source\mbed_stats.o: \
   mbed-os\targets\TARGET_STM\us_ticker_defines.h \
   mbed-os\targets\TARGET_STM\TARGET_STM32F1\us_ticker_data.h \
   mbed-os\platform\include\platform\mbed_power_mgmt.h \
-  mbed-os\platform\include\platform\mbed_version.h
+  mbed-os\platform\include\platform\mbed_version.h \
+  mbed-os\cmsis\CMSIS_5\CMSIS\RTOS2\Include\cmsis_os2.h

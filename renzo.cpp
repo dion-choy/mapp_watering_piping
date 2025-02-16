@@ -11,39 +11,34 @@
 
 // System includes
 #include "mbed.h"
+#include <chrono>
+using namespace std::chrono;
 
 // Our header files
 #include "lcd.h"    
-#include "check_water.hpp"  // For getDist() and ultrasonic sensor
-#include "keypad.hpp"      // For displayMessage() and other keypad functions
+#include "keypad.h"
+#include "lcdscroll.hpp"
+#include "sensors/sensors.hpp"  // For getDist()
 
 // Remove duplicate variables that are in keypad.cpp
 // unsigned char key, outChar;
 
 // Message strings for leak detection
 const char Message[] = "Normal";    
-const char Message1[] = "Warning! Water is";	
-const char Message2[] = "leaking!";  
+const char Message1[] = "Warning!          ";	
+const char Message2[] = "Leak Detected!    ";  // Adjusted to match LCD width
 
 // Leak detection variables
 float objDist = 0;
-bool waterFlag = true;
 bool isInitialized = false;
 
-// Keep these constants
+// Constants
 const float LEAK_THRESHOLD = 0.5; // cm 
 const int MEASUREMENT_DELAY = 1000; // ms
-const int CONFIRMATION_READINGS = 2; // no. of readings to confirm leak
 
-// Remove these as they're already in check_water.cpp
-// DigitalOut Trig(PC_5);
-// InterruptIn Echo(PC_6);
-// Timer echoTimer;
-// Timeout echoTimeOutTimer;
-
-// Add at the top with other global variables
-float currentDist = 0;  // Make this global
-Ticker distanceUpdate;  // Add Ticker for continuous updates
+// Global variables
+float currentDist = 0;
+Ticker distanceUpdate;
 
 // Add this function to update distance
 void updateDistance() {
@@ -54,10 +49,6 @@ void updateDistance() {
 // ---- Main Program ---------------------------------------------------------------
 bool leak_detect()
 {
-    // Remove this print since it's not needed on every check
-    // printf("This is MAPP LCDKeypad running on Mbed OS %d.%d.%d.\n", ...);
-
-    // Initialize reference distance on first call
     if (!isInitialized) {
         objDist = getDist();
         isInitialized = true;
@@ -65,22 +56,21 @@ bool leak_detect()
         return false;
     }
     
-    // Don't clear display here - moved to main loop
-    // lcd_write_cmd(0x01); 
-    
-    // Check if water level has increased
     if (currentDist < objDist) {
         objDist = currentDist;
-        printf("Water level increased. New reference distance: %.2f cm\n", objDist);
+        printf("Water level increased. New reference: %.2f cm\n", objDist);
     }
     
     if (!waterFlag && currentDist > (objDist + LEAK_THRESHOLD)) {
-        lcd_write_cmd(0x01); // Clear only when leak detected
+        // Clear current display and show leak warning
+        lcd_write_cmd(0x01);
         lcd_write_cmd(0x80); 
-        displayMessage(Message1); 
+        displayMessage(Message1);
         lcd_write_cmd(0xC0);     
         displayMessage(Message2);
         printf("Leak detected! Current: %.2f cm, Reference: %.2f cm\n", currentDist, objDist);
+        thread_sleep_for(2000);  // Show leak message for 2 seconds
+        update_display(true);    // Return to menu
         return true;
     }
     
@@ -94,40 +84,30 @@ int main()
     // Initialize LCD
     lcd_init();
     
-    // Start continuous distance updates every 1.5 seconds
-    distanceUpdate.attach(&updateDistance, 1.5);
+    // Start continuous distance updates
+    distanceUpdate.attach(&updateDistance, 1000ms);
     
     // Initial display setup
-    lcd_write_cmd(0x01);
-    lcd_write_cmd(0x80);
-    displayMessage("Press 1:Flow 2:Stop");
+    update_display(true);
     
     while(1) {
-        // Get user input
-        char input = getkey();
+        char key = getkey();
         
-        // Clear display only on input
-        lcd_write_cmd(0x01);
-        lcd_write_cmd(0x80);
-        
-        // Update water flow state
-        if(input == '1') {
-            waterFlag = true;
-            displayMessage("Water flow ON     ");
-            printf("Water flow enabled\n");
-        }
-        else if(input == '2') {
-            waterFlag = false;
-            displayMessage("Water flow OFF    ");
-            printf("Water flow disabled\n");
+        switch(key) {
+            case '2': // Up
+                scroll_up();
+                break;
+            case '8': // Down
+                scroll_down();
+                break;
+            case '5': // Select
+                select_option();
+                break;
         }
         
-        // Show status on second line
-        lcd_write_cmd(0xC0);
-        if(!leak_detect()) {
-            displayMessage("Status: Normal    ");
-        }
+        // Check for leaks
+        leak_detect();
         
-        thread_sleep_for(500); // Reduced delay
+        thread_sleep_for(1500);
     }
 }

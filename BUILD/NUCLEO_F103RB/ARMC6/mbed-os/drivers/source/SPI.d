@@ -81,19 +81,20 @@ BUILD\NUCLEO_F103RB\ARMC6\mbed-os\drivers\source\SPI.o: \
   mbed-os\platform\include\platform\NonCopyable.h \
   mbed-os\rtos\include\rtos\Mutex.h \
   mbed-os\rtos\include\rtos\mbed_rtos_types.h \
+  mbed-os\cmsis\CMSIS_5\CMSIS\RTOS2\Include\cmsis_os2.h \
   mbed-os\rtos\include\rtos\internal\mbed_rtos1_types.h \
+  mbed-os\cmsis\CMSIS_5\CMSIS\RTOS2\RTX\Include1\cmsis_os.h \
+  mbed-os\cmsis\CMSIS_5\CMSIS\RTOS2\RTX\Include\rtx_os.h \
+  mbed-os\cmsis\CMSIS_5\CMSIS\RTOS2\RTX\Include\rtx_def.h \
+  mbed-os\cmsis\device\RTE\include\RTE_Components.h \
+  mbed-os\cmsis\device\rtos\include\mbed_rtx_conf.h \
+  mbed-os\targets\TARGET_STM\mbed_rtx.h \
+  mbed-os\cmsis\device\mbed_cmsis_conf.h \
+  mbed-os\cmsis\CMSIS_5\CMSIS\RTOS2\RTX\Config\RTX_Config.h \
   mbed-os\rtos\include\rtos\internal\mbed_rtos_storage.h \
+  mbed-os\cmsis\device\rtos\include\mbed_rtx_storage.h \
+  mbed-os\cmsis\device\rtos\include\mbed_rtx_conf.h \
   mbed-os\rtos\include\rtos\Kernel.h \
-  mbed-os\platform\include\platform\internal\mbed_os_timer.h \
-  mbed-os\platform\include\platform\internal\SysTimer.h \
-  mbed-os\platform\include\platform\mbed_atomic.h \
-  mbed-os\platform\cxxsupport\mstd_type_traits \
-  mbed-os\platform\cxxsupport\mstd_cstddef \
-  mbed-os\platform\include\platform\internal\mbed_atomic_impl.h \
-  mbed-os\platform\include\platform\mbed_assert.h \
-  mbed-os\drivers\include\drivers\TimerEvent.h \
-  mbed-os\hal\include\hal\ticker_api.h \
-  mbed-os\drivers\include\drivers\TickerDataClock.h \
   mbed-os\platform\include\platform\ScopedLock.h \
   mbed-os\hal\include\hal\spi_api.h mbed-os\hal\include\hal\pinmap.h \
   mbed-os\hal\include\hal\dma_api.h mbed-os\hal\include\hal\buffer.h \
@@ -101,6 +102,11 @@ BUILD\NUCLEO_F103RB\ARMC6\mbed-os\drivers\source\SPI.o: \
   mbed-os\drivers\include\drivers\interfaces\InterfaceDigitalOut.h \
   mbed-os\hal\include\hal\gpio_api.h \
   mbed-os\platform\include\platform\SingletonPtr.h \
+  mbed-os\platform\include\platform\mbed_assert.h \
+  mbed-os\platform\include\platform\mbed_atomic.h \
+  mbed-os\platform\cxxsupport\mstd_type_traits \
+  mbed-os\platform\cxxsupport\mstd_cstddef \
+  mbed-os\platform\include\platform\internal\mbed_atomic_impl.h \
   mbed-os\platform\include\platform\CThunk.h \
   mbed-os\platform\include\platform\internal\CThunkBase.h \
   mbed-os\platform\include\platform\CircularBuffer.h \
@@ -113,4 +119,5 @@ BUILD\NUCLEO_F103RB\ARMC6\mbed-os\drivers\source\SPI.o: \
   mbed-os\platform\cxxsupport\mstd_utility \
   mbed-os\platform\cxxsupport\mstd_iterator \
   mbed-os\platform\include\platform\Transaction.h \
-  mbed-os\platform\include\platform\mbed_power_mgmt.h
+  mbed-os\platform\include\platform\mbed_power_mgmt.h \
+  mbed-os\hal\include\hal\ticker_api.h
