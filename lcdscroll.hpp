@@ -5,6 +5,8 @@ extern char *lines[];
 extern int displayStartIndex;
 extern int TOTAL_LINES;
 extern bool selectedOption;
+extern int cursorPosition;
+extern bool waterFlag;
 
 // Function to update LCD with cursor
 extern void update_display(bool);

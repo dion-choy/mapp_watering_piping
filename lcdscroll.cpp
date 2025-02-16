@@ -3,6 +3,8 @@
 #include "wifi.hpp"
 #include "delay.hpp"
 #include "key.hpp"
+#include "pump.hpp"
+#include "keypad.h"
 
 // Define multiple lines of text (5 rows total)
 const char *lines[] = {
@@ -23,6 +25,7 @@ int cursorPosition = 0;
 int displayStartIndex = 0;
 
 bool selectedOption = false;
+bool waterFlag = false;
 
 // Function prototypes
 void select_option();
@@ -115,11 +118,11 @@ void select_option() {
     int selectedIndex = displayStartIndex + cursorPosition;
     printf("You selected: %s\n", lines[selectedIndex]); // Placeholder action
 
-    if (key == 'A' && selectedOption) {
+    if (getkey() == 'A' && selectedOption) {
         update_display(true);
         selectedOption = false;
         return;
-    } else if (key == 'A') {
+    } else if (getkey() == 'A') {
         selectedOption = true;
     }
 
@@ -147,13 +150,17 @@ void select_option() {
             break;
         case 3:
             printf("Setting Watering Frequency...\n");
-            startCountdown();  // Call the countdown function
+            // startCountdown();  // Call the countdown function
             break;
         case 4:
             printf("Activating Watering System NOW!!!\n");
-            break;
-        default:
-            printf("Invalid selection\n");
+            lcd_write_cmd(0x01);
+            lcd_write_cmd(0x80);
+            const char* waterMsg = "Watering plants...  ";
+            for(int i = 0; i < 20; i++) {
+                lcd_write_data(waterMsg[i]);
+            }
+            startPump();
             break;
     }
     selectedOption = true;

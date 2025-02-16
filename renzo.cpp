@@ -24,53 +24,71 @@ using namespace std::chrono;
 // unsigned char key, outChar;
 
 // Message strings for leak detection
-const char Message[] = "Normal";    
+const char Message[] = "Normal            ";    
 const char Message1[] = "Warning!          ";	
-const char Message2[] = "Leak Detected!    ";  // Adjusted to match LCD width
+const char Message2[] = "Leak Detected!    ";
 
 // Leak detection variables
 float objDist = 0;
 bool isInitialized = false;
 
 // Constants
-const float LEAK_THRESHOLD = 0.5; // cm 
+const float LEAK_THRESHOLD = 1.0; // cm
 const int MEASUREMENT_DELAY = 1000; // ms
+
+unsigned char outChar;
 
 // Global variables
 float currentDist = 0;
 Ticker distanceUpdate;
 
-// Add this function to update distance
 void updateDistance() {
     currentDist = getDist();
-    printf("Current Distance: %.2f cm\n", currentDist);
+    if (currentDist > 0) {  // Only print valid readings
+        printf("[SENSOR] Distance: %.2f cm, Water: %s\n", 
+               currentDist, 
+               waterFlag ? "ON" : "OFF");
+    }
 }
 
-// ---- Main Program ---------------------------------------------------------------
 bool leak_detect()
 {
     if (!isInitialized) {
         objDist = getDist();
+        if (objDist <= 0) return false;  // Invalid reading
         isInitialized = true;
-        printf("Reference distance: %.2f cm\n", objDist);
+        printf("[INIT] Reference distance set to: %.2f cm\n", objDist);
         return false;
     }
     
+    if (currentDist <= 0) return false;  // Skip invalid readings
+    
     if (currentDist < objDist) {
+        printf("[LEVEL] Water level increased: %.2f -> %.2f cm\n", objDist, currentDist);
         objDist = currentDist;
-        printf("Water level increased. New reference: %.2f cm\n", objDist);
     }
     
     if (!waterFlag && currentDist > (objDist + LEAK_THRESHOLD)) {
-        // Clear current display and show leak warning
+        printf("[LEAK] Detected! Current: %.2f cm, Ref: %.2f cm\n", currentDist, objDist);
+        
+        // Display leak warning
         lcd_write_cmd(0x01);
-        lcd_write_cmd(0x80); 
-        displayMessage(Message1);
-        lcd_write_cmd(0xC0);     
-        displayMessage(Message2);
-        printf("Leak detected! Current: %.2f cm, Reference: %.2f cm\n", currentDist, objDist);
-        thread_sleep_for(2000);  // Show leak message for 2 seconds
-        update_display(true);    // Return to menu
+        ThisThread::sleep_for(50ms);  // Use ThisThread instead of thread_sleep_for
+        
+        lcd_write_cmd(0x80);
+        for (int i = 0; i < 20; i++) {
+            outChar = Message1[i];
+            lcd_write_data(outChar);
+        }
+        
+        lcd_write_cmd(0xC0);
+        for (int i = 0; i < 20; i++) {
+            outChar = Message2[i];  // Changed from Message1 to Message2
+            lcd_write_data(outChar);
+        }
+        
+        ThisThread::sleep_for(2s);  // Use ThisThread and chrono literals
+        update_display(true);
         return true;
     }
     
@@ -79,35 +97,44 @@ bool leak_detect()
 
 int main()
 {
-    printf("Leak Detection System Starting...\n");
+    printf("\n[START] Leak Detection System Starting...\n");
+    printf("[CONFIG] Threshold: %.2f cm\n", LEAK_THRESHOLD);
     
-    // Initialize LCD
     lcd_init();
+    ThisThread::sleep_for(100ms);
     
-    // Start continuous distance updates
-    distanceUpdate.attach(&updateDistance, 1000ms);
+    // Start distance updates with longer interval
+    distanceUpdate.attach(&updateDistance, 2s);
     
-    // Initial display setup
     update_display(true);
     
     while(1) {
         char key = getkey();
         
-        switch(key) {
-            case '2': // Up
-                scroll_up();
-                break;
-            case '8': // Down
-                scroll_down();
-                break;
-            case '5': // Select
-                select_option();
-                break;
+        if (key != 0) {
+            printf("[INPUT] Key pressed: %c\n", key);
+            
+            switch(key) {
+                case '2': 
+                    scroll_up();
+                    break;
+                case '8': 
+                    scroll_down();
+                    break;
+                case '5': 
+                    select_option();
+                    if (displayStartIndex + cursorPosition == 4) {
+                        waterFlag = true;
+                        printf("[STATE] Water enabled\n");
+                    } else {
+                        waterFlag = false;
+                        printf("[STATE] Water disabled\n");
+                    }
+                    break;
+            }
         }
         
-        // Check for leaks
         leak_detect();
-        
-        thread_sleep_for(1500);
+        ThisThread::sleep_for(200ms);  // Reduced main loop delay
     }
 }

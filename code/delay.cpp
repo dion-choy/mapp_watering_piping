@@ -2,6 +2,7 @@
 #include "lcd.h"
 #include "key.hpp"
 #include "lcdscroll.hpp"
+#include "pump.hpp"
 
 #include <chrono>
 
@@ -64,6 +65,7 @@ void countdownTask() {
                         for(int i = 0; i < 20; i++) {
                             lcd_write_data(waterMsg[i]);
                         }
+                        startPump();
                         thread_sleep_for(3000);
                         displayFullScreen(); // Return to countdown screen
                     }
