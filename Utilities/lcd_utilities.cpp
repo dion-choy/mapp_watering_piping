@@ -74,12 +74,12 @@ void lcd_write_data(char data)
     tempLCDPort = tempLCDPort & 0x00000F00;
     lcdPort = tempLCDPort;
 
-	wait_us(10000); 
+	wait_us(1000); 
    	LCD_RS = 1;
-    wait_us(10000);			//_-_ strobe data in
+    wait_us(1000);			//_-_ strobe data in
 
     lcd_strobe();
-    wait_us(10000);
+    wait_us(1000);
 
     temp1 = data;
     temp1 = temp1 & 0x0F;
@@ -88,12 +88,12 @@ void lcd_write_data(char data)
     tempLCDPort = tempLCDPort & 0x00000F00;
     lcdPort = tempLCDPort;
 
-    wait_us(10000);
+    wait_us(1000);
 	LCD_RS = 1;
-    wait_us(10000); 			//_-_ strobe data in
+    wait_us(1000); 			//_-_ strobe data in
 
     lcd_strobe();	
-    wait_us(10000);
+    wait_us(1000);
 }
 
 

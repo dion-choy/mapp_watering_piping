@@ -2,6 +2,7 @@
 #include "lcd.h"
 #include "wifi.hpp"
 #include "delay.hpp"
+#include "key.hpp"
 
 // Define multiple lines of text (5 rows total)
 const char *lines[] = {
@@ -114,25 +115,31 @@ void select_option() {
     int selectedIndex = displayStartIndex + cursorPosition;
     printf("You selected: %s\n", lines[selectedIndex]); // Placeholder action
 
-    if (selectedOption) {
+    if (key == 'A' && selectedOption) {
         update_display(true);
         selectedOption = false;
         return;
+    } else if (key == 'A') {
+        selectedOption = true;
     }
 
-    clear_lcd();
+    if (!selectedOption) {
+        return;
+    }
     lcd_write_cmd(0x80);  // Move cursor to line 1
     // Placeholder: Add actual function calls for each option
     int i = 0;
     switch (selectedIndex) {
         case 0:
             printf("Displaying Temperature & Humidity...\n");
+            clear_lcd();
             break;
         case 1:
             printf("Displaying Soil Moisture Data...\n");
             break;
         case 2:
             printf("Displaying IP Address...\n");
+            clear_lcd();
             while (ipBuf[i] != '\0') {
                 lcd_write_data(ipBuf[i]);
                 i++;

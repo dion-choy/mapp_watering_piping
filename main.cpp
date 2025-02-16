@@ -5,13 +5,12 @@
 #include "sensors.hpp"
 #include "wifi.hpp"
 #include "lcd.h"
-#include "keypad.h"
 #include "lcdscroll.hpp"
 #include "delay.hpp"
 
-Thread wifi(osPriorityNormal, OS_STACK_SIZE/2);
-Thread sensors(osPriorityNormal, OS_STACK_SIZE/2);
-Thread countdownThread(osPriorityHigh);  // Give countdown higher priority
+Thread wifi(osPriorityNormal, OS_STACK_SIZE/4);
+Thread sensors(osPriorityNormal, OS_STACK_SIZE/4);
+Thread countdownThread(osPriorityNormal, OS_STACK_SIZE/2);  // Give countdown higher priority
 DHT11 dht(PA_7);
 
 int temp = 0;
@@ -25,6 +24,17 @@ DigitalOut decoderA0(PB_4);  // Least significant bit
 DigitalOut decoderA1(PB_5);  // Middle bit
 DigitalOut decoderA2(PB_6);  // Most significant bit
 
+unsigned char key = 255;
+BusIn Keypad_Data(PB_8, PB_9, PB_10, PB_11); // Keypad data pins
+InterruptIn keypad_interrupt(PB_13);         // DA pin of the keypad for interrupt
+
+EventQueue *queue = mbed_event_queue(); // event queue
+
+const unsigned char lookupTable[] = {'1', '2', '3', 'F', '4', '5', '6', 'E', '7', '8', '9', 'D', 'A', '0', 'B', 'C'};
+
+void keypad_ISR();
+void myCallback();
+
 void broadCastPage();
 void updateCode();
 
@@ -32,66 +42,73 @@ void broadCastPage() {
     setupWifi();
     while (true) {
         loadPage(temp, humidity, brightness, tankFullPercent, moisture);
+        thread_sleep_for(500);
     }
 }
 
+const unsigned char ledBarTable[] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
+PortOut LEDBar(PortB, 0xFF);
+int ledLevel;
+float tempPercent;
+#define MINDIST 5
+#define MAXDIST 30
 void updateCode() {
+
     while (true) {
         dht.readTemperatureHumidity(temp, humidity);
         dist = getDist();
         moisture = getMoist();
         brightness = getBright();
-        thread_sleep_for(1000);
+
+        tempPercent = (1 - (dist - MINDIST)*1.0/(MAXDIST - MINDIST)) * 100;
         printf ("Obstacle is %.2f cm away!\n", dist);
         printf ("Brightness: %d\n", brightness);
+
+        if (tempPercent > 100) tankFullPercent = 100;
+        else if (tempPercent < 0) tankFullPercent = 0;
+        else tankFullPercent = tempPercent;
+
+        ledLevel = (tankFullPercent / 12.5);
+        
+        LEDBar = ledBarTable[ledLevel];
     }
 }
 
 int main()
 {
 	lcd_init();
+    update_display(true); // Show initial text with full refresh
     
-    // Start countdown thread first with high priority
-    initCountdownThread();
-    
-    // Then start other threads
     sensors.start(updateCode);
     wifi.start(broadCastPage);
+    initCountdownThread();
 
-    float maxdist = 30.0;
-    float mindist = 5.0;
-
-    lcd_init(); // Initialize LCD
-    update_display(true); // Show initial text with full refresh
+    Keypad_Data.mode(PullNone);
+    keypad_interrupt.rise(&keypad_ISR);
 
     while (true) {
-        float tempPercent = (1 - (dist - mindist)/(maxdist - mindist)) * 100;
-        
-        if (tempPercent > 100) tankFullPercent = 100;
-        else if (tempPercent < 0) tankFullPercent = 0;
-        else tankFullPercent = tempPercent;
-
-        // // Convert percentage to LED level (0-7)
-        // uint8_t ledLevel = (tankFullPercent / 12.5);
-        // if(ledLevel > 7) ledLevel = 7;  // Ensure we don't exceed 7 (3-bit limit)
-        
-        // // Set decoder pins according to binary value
-        // decoderA0 = (ledLevel & 0x01);       // Bit 0
-        // decoderA1 = (ledLevel & 0x02) >> 1;  // Bit 1
-        // decoderA2 = (ledLevel & 0x04) >> 2;  // Bit 2
-        
-
-        printf("The tank is %.2f %% full (LED level: %.2f)\n", tankFullPercent, tempPercent);
-        printf("%s", ipBuf);
-
-        
-        char key = getkey(); // Wait for key input
-        if (key == 'D' && displayStartIndex + 1 < TOTAL_LINES) {  // Scroll Down
-            scroll_down();
-        } else if (key == 'E') {  // Scroll Up
-            scroll_up();
-        } else if (key == 'A') {  //  Select current row
+        if (key != 255) {
+            if (key == 'D' && displayStartIndex + 1 < TOTAL_LINES) {  // Scroll Down
+                scroll_down();
+            } else if (key == 'E') {  // Scroll Up
+                scroll_up();
+            }
             select_option();
+            key = 255;
         }
+
+        countdownTask();
+    }
+}
+
+void keypad_ISR() {
+    queue->call(myCallback);        // process in a different context
+}
+
+void myCallback() {
+    while (key == 255) {
+        printf("Called");
+        key = lookupTable[Keypad_Data & Keypad_Data.mask()];
+        printf("%d", key);
     }
 }
