@@ -4,6 +4,7 @@
 extern char *lines[];
 extern int displayStartIndex;
 extern int TOTAL_LINES;
+extern bool selectedOption;
 
 // Function to update LCD with cursor
 extern void update_display(bool);
@@ -16,8 +17,3 @@ extern void scroll_up() ;
 
 // Function to select the currently highlighted option
 extern void select_option();
-
-extern void displayMessage(const char*);
-
-// Add water flag declaration
-extern bool waterFlag;

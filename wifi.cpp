@@ -19,7 +19,7 @@ static BufferedSerial serial_port(UART3_TX, UART3_RX);
 // Application buffer to send the data
 char bufRx[MAXIMUM_BUFFER_SIZE] = {0};
 char bufTx[MAXIMUM_BUFFER_SIZE] = {0};
-char ipBuf[15] = {0};
+char ipBuf[16] = "No connection";
 char bufCommand[MAXIMUM_BUFFER_SIZE] = {0};
 char brightnessStr[7];
 char ipString[] = "+CIFSR:STAIP,\"";
