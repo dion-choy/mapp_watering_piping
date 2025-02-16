@@ -1,6 +1,6 @@
 #include "mbed.h"
 #include "lcd.h"
-#include "key.hpp"
+#include "exports.hpp"
 #include "lcdscroll.hpp"
 
 #include <chrono>
@@ -35,7 +35,7 @@ void displayDays() {
 }
 
 void countdownTask() {
-    printf("[COUNTDOWN] Thread running\n");
+    // printf("[COUNTDOWN] Thread running\n");
     bool isActive = countdownActive;
     int currentDays = daysRemaining;
     uint64_t localLastUpdate = lastUpdateTime;

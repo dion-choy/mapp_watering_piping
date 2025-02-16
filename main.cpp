@@ -8,8 +8,8 @@
 #include "lcdscroll.hpp"
 #include "delay.hpp"
 
-Thread wifi(osPriorityNormal, OS_STACK_SIZE/2);
-Thread sensors(osPriorityNormal, OS_STACK_SIZE/2);
+Thread wifi(osPriorityNormal, 512);
+Thread sensors(osPriorityNormal, 512);
 DHT11 dht(PA_7);
 
 int temp = 0;

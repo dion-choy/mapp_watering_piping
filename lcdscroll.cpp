@@ -2,7 +2,8 @@
 #include "lcd.h"
 #include "wifi.hpp"
 #include "delay.hpp"
-#include "key.hpp"
+#include "exports.hpp"
+#include <cstdio>
 
 // Define multiple lines of text (5 rows total)
 const char *lines[] = {
@@ -111,6 +112,7 @@ void scroll_up() {
 }
 
 // Function to select the currently highlighted option
+char textBuff[40] = {' '};
 void select_option() {
     int selectedIndex = displayStartIndex + cursorPosition;
     printf("You selected: %s\n", lines[selectedIndex]); // Placeholder action
@@ -131,14 +133,30 @@ void select_option() {
     int i = 0;
     switch (selectedIndex) {
         case 0:
-            printf("Displaying Temperature & Humidity...\n");
+            sprintf(textBuff, "Temp: %d°C\nHumidity: %d%%", temp, humidity);
             clear_lcd();
+            while (textBuff[i] != '\0') {
+                if (textBuff[i] == '\n') {
+                    lcd_write_cmd(0xC0);
+                } else {
+                    lcd_write_data(textBuff[i]);
+                }
+                i++;
+            }
             break;
         case 1:
-            printf("Displaying Soil Moisture Data...\n");
+            clear_lcd();
+            if (moisture > 0.5) {
+                sprintf(textBuff, "Soil is dry");
+            } else {
+                sprintf(textBuff, "Soil is moist");
+            }
+            while (textBuff[i] != '\0') {
+                lcd_write_data(textBuff[i]);
+                i++;
+            }
             break;
         case 2:
-            printf("Displaying IP Address...\n");
             clear_lcd();
             while (ipBuf[i] != '\0') {
                 lcd_write_data(ipBuf[i]);
@@ -146,7 +164,6 @@ void select_option() {
             }
             break;
         case 3:
-            printf("Setting Watering Frequency...\n");
             startCountdown();  // Call the countdown function
             break;
         case 4:
