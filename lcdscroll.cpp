@@ -135,7 +135,7 @@ void select_option() {
     int i = 0;
     switch (selectedIndex) {
         case 0:
-            sprintf(textBuff, "Temp: %d°C\nHumidity: %d%%", temp, humidity);
+            sprintf(textBuff, "Temp: %d%cC\nHumidity: %d%%", temp, 0xDF, humidity);
             clear_lcd();
             while (textBuff[i] != '\0') {
                 if (textBuff[i] == '\n') {

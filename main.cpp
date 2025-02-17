@@ -42,10 +42,14 @@ void broadCastPage() {
     }
 }
 
+bool pumpRunning = false;
+
 const unsigned char ledBarTable[] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
 PortOut LEDBar(PortB, 0xFF);
 int ledLevel;
 float tempPercent;
+float oldPercent = tankFullPercent;
+#define LEAK_THRESH 7
 #define MINDIST 5
 #define MAXDIST 30
 void updateCode() {
@@ -56,7 +60,7 @@ void updateCode() {
         moisture = getMoist();
         brightness = getBright();
 
-        tempPercent = (1 - (dist - MINDIST)*1.0/(MAXDIST - MINDIST)) * 100;
+        tempPercent = (1 - (dist < 0 ? MAXDIST : dist - MINDIST)*1.0/(MAXDIST - MINDIST)) * 100;
         printf ("Obstacle is %.2f cm away!\n", dist);
         printf ("Brightness: %d\n", brightness);
 
@@ -67,6 +71,12 @@ void updateCode() {
         ledLevel = (tankFullPercent / 12.5);
         
         LEDBar = ledBarTable[ledLevel];
+
+        if (oldPercent - tankFullPercent > LEAK_THRESH && !pumpRunning) {
+            printf("LEAK, %.2f", oldPercent - tankFullPercent);
+        }
+
+        oldPercent = tankFullPercent;
     }
 }
 
