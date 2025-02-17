@@ -2,7 +2,9 @@
 #include "exports.hpp"
 
 DigitalOut relay(PA_0);  
-
+void initPump(){
+    relay = 1;
+}
 void startPump() {
     printf("Starting pump...\n");
     

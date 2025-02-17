@@ -1,2 +1,6 @@
+#include "mbed.h"
+
 extern void startPump();
-extern void startBuzzer();
+extern void initPump();
+//extern void startBuzzer();
+extern mbed::DigitalOut relay;

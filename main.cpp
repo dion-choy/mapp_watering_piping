@@ -55,7 +55,7 @@ void updateCode() {
 
     while (true) {
         dht.readTemperatureHumidity(temp, humidity);
-        dist = getDist();
+        //dist = getDist();
         moisture = getMoist();
         brightness = getBright();
 
@@ -73,7 +73,7 @@ void updateCode() {
 
         if (oldPercent - tankFullPercent > LEAK_THRESH && !pumpRunning) {
             printf("LEAK, %.2f", oldPercent - tankFullPercent);
-            startBuzzer();
+            //startBuzzer();
         }
 
         oldPercent = tankFullPercent;
@@ -83,7 +83,9 @@ void updateCode() {
 int main()
 {
 	lcd_init();
-    update_display(true); // Show initial text with full refresh
+    update_display(true);
+    initPump();
+    // Show initial text with full refresh
     
     sensors.start(updateCode);
     wifi.start(broadCastPage);
@@ -113,9 +115,13 @@ void keypad_ISR() {
 }
 
 void myCallback() {
+    if (relay.read() == 0) {
+        printf("====== PUMP ON ======\n");
+        key = 255;
+    }
+
     while (key == 255) {
-        printf("Called");
         key = lookupTable[Keypad_Data & Keypad_Data.mask()];
-        printf("%d", key);
+        printf("====== Called %d ======\n", key);
     }
 }
