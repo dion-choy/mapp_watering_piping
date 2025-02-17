@@ -2,14 +2,13 @@
 #include "lcd.h"
 #include "exports.hpp"
 #include "lcdscroll.hpp"
-
+#include "pump.hpp"
 #include <chrono>
 
 const char countMsg[] = "Days till watering:  ";
 const char daysMsg[] = "     Days";
 static int daysRemaining = 0;
 static bool countdownActive = false;
-static Thread countdownThread;
 static Timer countdownTimer;
 static bool threadRunning = false;
 static uint64_t lastUpdateTime = 0;
@@ -17,7 +16,7 @@ static uint64_t lastUpdateTime = 0;
 // Forward declarations
 void displayDays(void);
 void displayFullScreen(void);
-
+const char waterMsg[] = "Watering plants...  ";
 void displayDays() {
     printf("[DISPLAY] Updating display: %d days remaining\n", daysRemaining);
     
@@ -35,7 +34,7 @@ void displayDays() {
 }
 
 void countdownTask() {
-    // printf("[COUNTDOWN] Thread running\n");
+
     bool isActive = countdownActive;
     int currentDays = daysRemaining;
     uint64_t localLastUpdate = lastUpdateTime;
@@ -60,10 +59,11 @@ void countdownTask() {
                     if(selectedOption) {
                         lcd_write_cmd(0x01);
                         lcd_write_cmd(0x80);
-                        const char* waterMsg = "Watering plants...  ";
+                        
                         for(int i = 0; i < 20; i++) {
                             lcd_write_data(waterMsg[i]);
                         }
+                        startPump();
                         thread_sleep_for(3000);
                         displayFullScreen(); // Return to countdown screen
                     }
@@ -128,7 +128,6 @@ void startCountdown() {
     }
     countdownTimer.reset();
     countdownTimer.start();
-
 
     if (key != 255) {
         printf("[MENU] Key pressed: %c\n", key);

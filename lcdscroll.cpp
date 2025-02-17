@@ -2,11 +2,9 @@
 #include "lcd.h"
 #include "wifi.hpp"
 #include "delay.hpp"
-#include "pump.hpp"
-#include "sensors.hpp"
 #include "exports.hpp"
 #include <cstdio>
-
+#include "pump.hpp"
 // Define multiple lines of text (5 rows total)
 const char *lines[] = {
     "Disp Temp & Humid   ",
@@ -15,6 +13,7 @@ const char *lines[] = {
     "Watering Frequency  ",
     "Water NOW!!!!!      "
 };
+
 
 // Constants
 int TOTAL_LINES = (sizeof(lines) / sizeof(lines[0]));  // Total stored lines
@@ -26,6 +25,7 @@ int cursorPosition = 0;
 int displayStartIndex = 0;
 
 bool selectedOption = false;
+
 
 // Function prototypes
 void select_option();
@@ -116,6 +116,8 @@ void scroll_up() {
 // Function to select the currently highlighted option
 char textBuff[40] = {' '};
 void select_option() {
+    
+    const char waterMsg[] =  "Watering plants...  ";
     int selectedIndex = displayStartIndex + cursorPosition;
     printf("You selected: %s\n", lines[selectedIndex]); // Placeholder action
 
@@ -135,7 +137,7 @@ void select_option() {
     int i = 0;
     switch (selectedIndex) {
         case 0:
-            sprintf(textBuff, "Temp: %d%cC\nHumidity: %d%%", temp, 0xDF, humidity);
+            sprintf(textBuff, "Temp: %d°C\nHumidity: %d%%", temp, humidity);
             clear_lcd();
             while (textBuff[i] != '\0') {
                 if (textBuff[i] == '\n') {
@@ -170,6 +172,12 @@ void select_option() {
             break;
         case 4:
             printf("Activating Watering System NOW!!!\n");
+            lcd_write_cmd(0x01);
+            lcd_write_cmd(0x80);
+                for(int i = 0; i < 20; i++) {
+                    lcd_write_data(waterMsg[i]);
+                }
+            startPump();
             break;
         default:
             printf("Invalid selection\n");

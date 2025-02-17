@@ -7,8 +7,7 @@
 #include "lcd.h"
 #include "lcdscroll.hpp"
 #include "delay.hpp"
-#include "leakdetect.hpp"  // Add header for leak detection
-
+#include "pump.hpp"
 Thread wifi(osPriorityNormal, 512);
 Thread sensors(osPriorityNormal, 512);
 DHT11 dht(PA_7);
@@ -74,6 +73,7 @@ void updateCode() {
 
         if (oldPercent - tankFullPercent > LEAK_THRESH && !pumpRunning) {
             printf("LEAK, %.2f", oldPercent - tankFullPercent);
+            startBuzzer();
         }
 
         oldPercent = tankFullPercent;
@@ -91,9 +91,6 @@ int main()
     Keypad_Data.mode(PullNone);
     keypad_interrupt.rise(&keypad_ISR);
 
-    uint32_t lastKeyTime = 0;
-    const uint32_t KEY_TIMEOUT = 5000;  // 5 seconds timeout for menu
-
     while (true) {
         if (key != 255) {
             if (key == 'D' && displayStartIndex + 1 < TOTAL_LINES) {  // Scroll Down
@@ -104,8 +101,10 @@ int main()
             select_option();
             key = 255;
         }
+        if (moisture > 0.5){
+            countdownTask();
+        }
 
-        countdownTask();
     }
 }
 

@@ -7,3 +7,4 @@ extern int brightness;
 extern float dist;
 extern float moisture;
 extern float tankFullPercent;
+extern bool pumpRunning;
