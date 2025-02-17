@@ -7,6 +7,7 @@
 #include "lcd.h"
 #include "lcdscroll.hpp"
 #include "delay.hpp"
+#include "leakdetect.hpp"  // Add header for leak detection
 
 Thread wifi(osPriorityNormal, 512);
 Thread sensors(osPriorityNormal, 512);
@@ -79,6 +80,9 @@ int main()
 
     Keypad_Data.mode(PullNone);
     keypad_interrupt.rise(&keypad_ISR);
+
+    uint32_t lastKeyTime = 0;
+    const uint32_t KEY_TIMEOUT = 5000;  // 5 seconds timeout for menu
 
     while (true) {
         if (key != 255) {

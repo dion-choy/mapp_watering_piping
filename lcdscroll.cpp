@@ -2,6 +2,8 @@
 #include "lcd.h"
 #include "wifi.hpp"
 #include "delay.hpp"
+#include "pump.hpp"
+#include "sensors.hpp"
 #include "exports.hpp"
 #include <cstdio>
 
