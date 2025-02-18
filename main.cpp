@@ -55,7 +55,7 @@ void updateCode() {
 
     while (true) {
         dht.readTemperatureHumidity(temp, humidity);
-        //dist = getDist();
+        dist = getDist();
         moisture = getMoist();
         brightness = getBright();
 
@@ -73,7 +73,7 @@ void updateCode() {
 
         if (oldPercent - tankFullPercent > LEAK_THRESH && !pumpRunning) {
             printf("LEAK, %.2f", oldPercent - tankFullPercent);
-            //startBuzzer();
+            startBuzzer();
         }
 
         oldPercent = tankFullPercent;
