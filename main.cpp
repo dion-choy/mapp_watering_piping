@@ -8,8 +8,6 @@
 #include "lcdscroll.hpp"
 #include "delay.hpp"
 #include "pump.hpp"
-Thread wifi(osPriorityNormal, 512);
-Thread sensors(osPriorityNormal, 512);
 DHT11 dht(PA_7);
 
 int temp = 0;
@@ -30,17 +28,6 @@ const unsigned char lookupTable[] = {'1', '2', '3', 'F', '4', '5', '6', 'E', '7'
 void keypad_ISR();
 void myCallback();
 
-void broadCastPage();
-void updateCode();
-
-void broadCastPage() {
-    setupWifi();
-    while (true) {
-        loadPage(temp, humidity, brightness, tankFullPercent, moisture);
-        thread_sleep_for(500);
-    }
-}
-
 bool pumpRunning = false;
 
 const unsigned char ledBarTable[] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
@@ -50,10 +37,21 @@ float tempPercent;
 float oldPercent = tankFullPercent;
 #define LEAK_THRESH 7
 #define MINDIST 5
-#define MAXDIST 30
-void updateCode() {
+#define MAXDIST 10
+
+int main()
+{
+	lcd_init();
+    update_display(true);
+    initPump();
+    
+    Keypad_Data.mode(PullNone);
+    keypad_interrupt.rise(&keypad_ISR);
+    
+    setupWifi();
 
     while (true) {
+
         dht.readTemperatureHumidity(temp, humidity);
         dist = getDist();
         moisture = getMoist();
@@ -77,23 +75,8 @@ void updateCode() {
         }
 
         oldPercent = tankFullPercent;
-    }
-}
 
-int main()
-{
-	lcd_init();
-    update_display(true);
-    initPump();
-    // Show initial text with full refresh
-    
-    sensors.start(updateCode);
-    wifi.start(broadCastPage);
 
-    Keypad_Data.mode(PullNone);
-    keypad_interrupt.rise(&keypad_ISR);
-
-    while (true) {
         if (key != 255) {
             if (key == 'D' && displayStartIndex + 1 < TOTAL_LINES) {  // Scroll Down
                 scroll_down();
@@ -103,9 +86,11 @@ int main()
             select_option();
             key = 255;
         }
-        if (moisture > 0.5){
+        if (moisture > 0.7){
             countdownTask();
         }
+
+        loadPage(temp, humidity, brightness, tankFullPercent, moisture);
 
     }
 }

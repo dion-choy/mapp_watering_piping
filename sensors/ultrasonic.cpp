@@ -55,6 +55,7 @@ float getDist() {
 
         bDetectingObj = true;
         while (!bObjDetected && bDetectingObj && !bTimeOut) {
+            printf("looping");
             __WFI();
         }
 
