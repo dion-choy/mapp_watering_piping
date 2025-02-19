@@ -46,20 +46,8 @@ float oldPercent = tankFullPercent;
 #define MINDIST 5
 #define MAXDIST 10
 
-int main()
-{
-	lcd_init();
-    update_display(true);
-    initPump();
-    
-    wifi.start(broadCastPage);
-
-    Keypad_Data.mode(PullNone);
-    keypad_interrupt.rise(&keypad_ISR);
-
-    while (true) {
-
-        dht.readTemperatureHumidity(temp, humidity);
+void updateSensors(){
+     dht.readTemperatureHumidity(temp, humidity);
         dist = getDist();
         moisture = getMoist();
         brightness = getBright();
@@ -84,8 +72,6 @@ int main()
         }
 
         oldPercent = tankFullPercent;
-
-
         if (key != 255) {
             if (key == 'D' && displayStartIndex + 1 < TOTAL_LINES) {  // Scroll Down
                 scroll_down();
@@ -98,9 +84,21 @@ int main()
         if (moisture > 0.7){
             countdownTask();
         }
+}
+int main()
+{
+	lcd_init();
+    update_display(true);
+    initPump();
+    
+    wifi.start(broadCastPage);
 
+    Keypad_Data.mode(PullNone);
+    keypad_interrupt.rise(&keypad_ISR);
+
+    while (true) {
+        updateSensors();
         loadPage(temp, humidity, brightness, tankFullPercent, moisture);
-
     }
 }
 
