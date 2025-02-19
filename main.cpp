@@ -72,15 +72,7 @@ void updateSensors(){
         }
 
         oldPercent = tankFullPercent;
-        if (key != 255) {
-            if (key == 'D' && displayStartIndex + 1 < TOTAL_LINES) {  // Scroll Down
-                scroll_down();
-            } else if (key == 'E') {  // Scroll Up
-                scroll_up();
-            }
-            select_option();
-            key = 255;
-        }
+        
         if (moisture > 0.7){
             countdownTask();
         }
@@ -98,6 +90,15 @@ int main()
 
     while (true) {
         updateSensors();
+        if (key != 255) {
+            if (key == 'D' && displayStartIndex + 1 < TOTAL_LINES) {  // Scroll Down
+                scroll_down();
+            } else if (key == 'E') {  // Scroll Up
+                scroll_up();
+            }
+            select_option();
+            key = 255;
+        }
         loadPage(temp, humidity, brightness, tankFullPercent, moisture);
     }
 }
