@@ -8,7 +8,7 @@
 // Define multiple lines of text (5 rows total)
 const char *lines[] = {
     "Disp Temp & Humid   ",
-    "Disp Soil Moisture  ",
+    "Disp Moist & Light  ",
     "Disp IP address     ",
     "Watering Frequency  ",
     "Water NOW!!!!!      "
@@ -150,7 +150,7 @@ void select_option() {
             break;
         case 1:
             clear_lcd();
-            if (moisture > 0.5) {
+            if (moisture > 0.7) {
                 sprintf(textBuff, "Soil is dry");
             } else {
                 sprintf(textBuff, "Soil is moist");
@@ -159,6 +159,22 @@ void select_option() {
                 lcd_write_data(textBuff[i]);
                 i++;
             }
+            
+            lcd_write_cmd(0xC0);
+            if (brightness == 0) {
+                sprintf(textBuff, "Dark");
+            } else if (brightness == 1) {
+                sprintf(textBuff, "Dim");
+            } else if (brightness == 2) {
+                sprintf(textBuff, "Bright");
+            }
+
+            i = 0;
+            while (textBuff[i] != '\0') {
+                lcd_write_data(textBuff[i]);
+                i++;
+            }
+
             break;
         case 2:
             clear_lcd();

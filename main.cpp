@@ -8,6 +8,7 @@
 #include "lcdscroll.hpp"
 #include "delay.hpp"
 #include "pump.hpp"
+Thread wifi(osPriorityNormal, 512);
 DHT11 dht(PA_7);
 
 int temp = 0;
@@ -28,6 +29,12 @@ const unsigned char lookupTable[] = {'1', '2', '3', 'F', '4', '5', '6', 'E', '7'
 void keypad_ISR();
 void myCallback();
 
+void broadCastPage();
+
+void broadCastPage() {
+    setupWifi();
+}
+
 bool pumpRunning = false;
 
 const unsigned char ledBarTable[] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
@@ -45,10 +52,10 @@ int main()
     update_display(true);
     initPump();
     
+    wifi.start(broadCastPage);
+
     Keypad_Data.mode(PullNone);
     keypad_interrupt.rise(&keypad_ISR);
-    
-    setupWifi();
 
     while (true) {
 
@@ -72,6 +79,8 @@ int main()
         if (oldPercent - tankFullPercent > LEAK_THRESH && !pumpRunning) {
             printf("LEAK, %.2f", oldPercent - tankFullPercent);
             startBuzzer();
+        } else {
+            pumpRunning = false;
         }
 
         oldPercent = tankFullPercent;
